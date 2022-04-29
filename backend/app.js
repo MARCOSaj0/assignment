@@ -1,13 +1,13 @@
 const express = require('express');
-// const userRouters = require('./routes/users-routes');
 const HttpError = require('./utils/http-error');
 const db = require('./config/database');
 const { Port } = require('./config/index');
 const app = express();
 
-app.use(express.json());
+const userRouters = require('./routes/users-routes');
 
-// app.use('/api',userRouters);
+app.use(express.json());
+app.use('/api',userRouters);
 
 app.use((req, res, next) => {
     const error = new HttpError('Could not find this route.', 404);

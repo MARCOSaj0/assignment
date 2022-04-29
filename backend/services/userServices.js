@@ -2,74 +2,53 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const HttpError = require('../utils/http-error');
 const bcrypt = require('bcrypt');
+const { p_key } = require('../config');
 
 const signupService = async (data) => {
     const { name, email, password } = data;
-    let hasUser;
     try {
-        hasUser = await User.findOne({email: email});
-    } catch (err) {
-        console.log(err);
-        throw new HttpError('Internal Server Error.', 500);
-    }
-    if (hasUser) {
-        throw new HttpError('Could not create user, email already exists.', 422);
-    }
-    let hashedPwd;
-    try {
-        hashedPwd = await bcrypt.hash(password, 12);
-    } catch (err) {
-        console.log(err);
-        throw new HttpError('Internal Server Error.', 500);
-    }
-    const newUser = new User({
-        name, email, password: hashedPwd
-    });
-    try {
+        const hasUser = await User.findOne({ email });
+        if (hasUser) {
+            throw new HttpError("Could not create account, email already exists.");
+        }
+        const hashedPwd = await bcrypt.hash(password, 12);
+        if (!hashedPwd) {
+            throw new HttpError("Sorry we are facing issue in register");
+        }
+        const newUser = new User({
+            name, email, password: hashedPwd
+        });
         await newUser.save();
         return newUser;
     } catch (err) {
         console.log(err);
-        throw new HttpError('User signup failed.', 500);
+        throw new HttpError(err.message || "User signup failed.");
     }
 };
 
 const loginService = async (data) => {
     const { email, password } = data;
-    let user;
     try {
-        user = await User.findOne({email: email});
-    } catch (err) {
-        console.log(err);
-        throw new HttpError('Internal error');
-    }
-    if (!user) {
-      throw new HttpError('No user found.', 401);
-    }
-    let isPwdValid = false;
-    try {
-        isPwdValid = await bcrypt.compare(password, user.password);
-    } catch (err) {
-        console.log(err);
-        throw new HttpError('Internal Server Error.', 500);
-    }
-    if (!isPwdValid) {
-        throw new HttpError('Credentials did not match.', 401);
-    }
-    let token;
-    var privateKey = fs.readFileSync('jwtRS256.key');
-    try{
-        token = jwt.sign(
-            {userId: user.id, userName: user.name, userEmail: user.email},
-            // 'this is my key',
-            privateKey,
-            { algorithm: 'RS256', expiresIn: '1h'}
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new HttpError("No user found.");
+        }
+        const isPwdValid = await bcrypt.compare(password, user.password);
+        if (!isPwdValid) {
+            throw new HttpError("Credentials did not match.");
+        }
+        const token = jwt.sign(
+            { name: user.name, email }, 
+            p_key, 
+            { expiresIn: "3h"}
         );
-        const details =  {userId: user.id, userName: user.name, userEmail: user.email, token};
-        return details;
+        if (!token) {
+            throw new HttpError("Failed in token Creation");
+        }
+        return token;
     } catch (err) {
         console.log(err);
-        throw new HttpError('Internal error');
+        throw new HttpError(err.message || "Login failed.");
     }
 };
 
