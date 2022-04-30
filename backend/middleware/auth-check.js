@@ -6,11 +6,11 @@ module.exports = async (req, res, next) => {
     try {
         const authHeader = await req.headers["authorization"];
         if(!authHeader) {
-            throw new HttpError("You don't have access key for current operation");
+            throw new HttpError("You are not Authorized for this operation");
         }
         const bearer = await authHeader.split(" ");
         const token = await bearer[1];
-        jwt.verify(token, privateKey, (err, user) => {
+        jwt.verify(token, p_key, (err, user) => {
             if (err) {
                 throw new HttpError("You are not Authorized for this operation");
             } else {
