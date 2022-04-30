@@ -18,4 +18,14 @@ const createAuthor = async (data) => {
     }
 };
 
-module.exports = {createAuthor};
+const getAuthors = async() => {
+    try {
+        const authors = await Author.find().select('_id name');
+        return authors;
+    } catch (err) {
+        console.log(err);
+        throw new HttpError(err.message || "Error in getting list of authors.");
+    }
+}
+
+module.exports = {createAuthor, getAuthors};

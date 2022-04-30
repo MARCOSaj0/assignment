@@ -10,4 +10,14 @@ const createAuthor = async (req, res) => {
     }
 };
 
-module.exports = {createAuthor};
+const getAuthors = async (req, res) => {
+    try {
+        const details = await authorServices.getAuthors();
+        res.status(200).json({ details });
+    } catch(err) {
+        console.log(err);
+        res.status(500).json({success: false, data: null, message: err.message});
+    }
+};
+
+module.exports = {createAuthor, getAuthors};

@@ -6,10 +6,12 @@ const app = express();
 
 const userRoutes = require('./routes/user-routes');
 const authorRoutes = require('./routes/author-routes');
+const bookRoutes = require('./routes/book-routes');
 
 app.use(express.json());
 app.use('/api',userRoutes);
 app.use('/api',authorRoutes);
+app.use('/api',bookRoutes);
 
 app.use((req, res, next) => {
     const error = new HttpError('Could not find this route.', 404);
