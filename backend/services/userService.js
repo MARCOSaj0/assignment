@@ -40,7 +40,7 @@ const loginService = async (data) => {
         const token = jwt.sign(
             { name: user.name, email }, 
             p_key, 
-            { expiresIn: "3h"}
+            { expiresIn: "1d"}
         );
         if (!token) {
             throw new HttpError("Failed in token Creation");
